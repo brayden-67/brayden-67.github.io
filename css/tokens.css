@@ -1,0 +1,188 @@
+/* ============================================================================
+   tokens.css — the design system, in one place.
+   ----------------------------------------------------------------------------
+   Every colour and size the site uses is defined here as a CSS variable.
+   style.css never writes a raw colour. Change one line here and it updates
+   everywhere.
+
+   THE DESIGN
+   Built from Brayden's Figma. A big name block on the left, a media carousel on
+   the right with the next panel bleeding off the edge of the screen. On a phone
+   it stacks: name, button, carousel, arrows.
+
+   ── Rules this design holds to ──
+   1. No gradients. Flat colour only.
+   2. Nothing centred. Everything left-aligned off one gutter.
+   3. Square edges, except the carousel panels.
+   Break any of these and it starts looking like a template again.
+   ========================================================================== */
+
+
+/* ----------------------------------------------------------------------------
+   1. FONTS — self-hosted, not fetched from Google.
+   ----------------------------------------------------------------------------
+   Third-party font domains get blocked on some school networks and add a round
+   trip before text can render. These two files are 53 KB total.
+
+   Archivo is a grotesque drawn for print and signage. It matters that it isn't
+   Inter, Poppins or Montserrat — those are the defaults every generated site
+   reaches for, and using one is an instant tell.
+   -------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Archivo Black';
+  src: url('../assets/fonts/archivo-black-latin.woff2') format('woff2');
+  /* The file IS the black weight, but its internal weight value is 400. That's
+     correct, not a mistake — don't "fix" it to 900 or it stops loading. */
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Archivo';
+  src: url('../assets/fonts/archivo-latin.woff2') format('woff2');
+  /* Variable: one file covers 400 through 700. */
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+
+  /* --------------------------------------------------------------------------
+     2. COLOUR — sampled out of the Figma file.
+     --------------------------------------------------------------------------
+     Purple is reserved for three things: the eyebrow, the Follow button and the
+     3px rules. If it starts appearing elsewhere the Follow button stops standing
+     out, and getting that pressed is the whole purpose of the site.
+     ------------------------------------------------------------------------ */
+
+  /* These four are lifted straight out of Brayden's Figma file, sampled from
+     the render rather than guessed, so the site matches the design exactly. */
+  --ground: #F0E5CE;   /* page background */
+  --ink:    #16181C;   /* the name, and the solid slab sections */
+  --purple: #381E72;   /* the eyebrow, THE follow button, the rules */
+  --panel:  #1E1E1E;   /* behind the carousel media */
+
+  /* A lighter purple for use ON the dark slab. #381E72 is nearly black against
+     #16181C and would disappear there. */
+  --purple-lift: #8F73D9;
+
+  --ice: #BBD0DE;      /* his jacket. The giveaway field. */
+
+  /* YouTube red, and the ONLY place it appears is that one card. It's deepened
+     from YouTube's own #FF0000 on purpose: cream text on pure red comes out at
+     about 3.2:1, which is under the readable line for the handle underneath the
+     headline. This shade reads as the same red and clears 4.5:1. */
+  --red: #CE0F0F;
+
+  /* Type colours that sit on the ink slab. */
+  --on-ink:      #F0E5CE;
+  --on-ink-soft: rgba(240, 229, 206, 0.66);
+
+  --ink-soft: rgba(22, 24, 28, 0.68);   /* secondary text on the ground */
+  --rule:     rgba(22, 24, 28, 0.16);   /* hairlines */
+
+
+  /* --------------------------------------------------------------------------
+     3. TYPE
+     ------------------------------------------------------------------------ */
+
+  --font-display: 'Archivo Black', 'Arial Black', Impact, sans-serif;
+  --font-body:    'Archivo', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Big. In the Figma the name is about 16% of the canvas height and roughly
+     44% of its width — it is by a distance the loudest thing on the page, and
+     shrinking it is what made the first build feel timid next to the design. */
+  --step-name:    16vw;
+  --step-h2:      clamp(1.5rem, 6.5vw, 2.5rem);
+  --step-lead:    1.0625rem;   /* 17px */
+  --step-body:    1.0625rem;
+  --step-small:   0.875rem;
+  --step-eyebrow: 0.75rem;     /* 12px */
+  --step-num:     clamp(2.5rem, 13vw, 4rem);   /* the 01 02 03 */
+
+  --track-name:    -0.02em;
+  --track-eyebrow: 0.12em;
+  --track-btn:     0.06em;
+
+  --leading-name: 0.92;
+  --leading-body: 1.45;
+
+
+  /* --------------------------------------------------------------------------
+     4. SPACING — multiples of 4.
+     ------------------------------------------------------------------------ */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 44px;
+  --space-8: 64px;
+  --space-9: 88px;
+
+  /* One gutter, used everywhere. Everything on the page aligns to this single
+     left edge — that consistency is most of why it reads as designed. */
+  --gutter:  20px;
+  --measure: 62rem;
+
+  --rule-thick: 3px;   /* the purple rules between sections */
+
+
+  /* --------------------------------------------------------------------------
+     5. SHAPE + MOTION
+     ------------------------------------------------------------------------ */
+
+  /* Buttons and blocks stay square. */
+  --radius: 0px;
+
+  /* The carousel panels are the one rounded thing, because that's how they're
+     drawn in the Figma — and it's right: rounded media reads as a phone screen
+     or a TikTok card, which is exactly what's in them. The contrast between
+     rounded media and square buttons is deliberate, not an inconsistency. */
+  --radius-media: 20px;
+
+  --ease:  cubic-bezier(0.4, 0.0, 0.2, 1);
+  --speed: 180ms;
+}
+
+
+@media (min-width: 720px) {
+  :root {
+    /* On desktop the name shares a row with the carousel, so it has to fit a
+       COLUMN rather than the window — and "Brayden" is seven characters of
+       Archivo Black, which is about 4.35x the font size wide.
+       9vw keeps the longest line inside its column at every width from 720 up,
+       with the 9rem cap stopping it ballooning on a big monitor.
+       Raise this and the name runs under the photos. It did exactly that at
+       9rem flat, which is what the overflow test below now guards against. */
+    --step-name: min(8.5vw, 8.5rem);
+    --gutter:    40px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    /* The Figma is drawn on a 2304px canvas with content spanning nearly all of
+       it. A 992px column cramps that badly — the name and the panels end up
+       fighting for room that a wider page simply has. */
+    --measure: 76rem;
+  }
+}
+
+
+/* ----------------------------------------------------------------------------
+   6. REDUCED MOTION
+   ----------------------------------------------------------------------------
+   Some people turn "reduce motion" on in their phone settings, often because
+   animation makes them ill. Everything still works, it just stops sliding.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --speed: 1ms; }
+}

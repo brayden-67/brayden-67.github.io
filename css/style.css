@@ -1,0 +1,1149 @@
+/* ============================================================================
+   style.css — layout and components.
+   ----------------------------------------------------------------------------
+   Read tokens.css first. Every colour and size below comes from a variable
+   there; this file has no raw hex values and no gradients.
+
+   Written MOBILE FIRST. The plain rules are the phone layout; the
+   @media (min-width: ...) blocks adapt it upward. Nearly all traffic is phones,
+   so the phone layout is the real design.
+
+     1. Reset              5. Follow button
+     2. Page base          6. Giveaway
+     3. Shared pieces      7. Closing band + footer
+     4. Hero + carousel    8. Sticky bar + toast
+   ========================================================================== */
+
+
+/* ============================================================================
+   1. RESET
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, p, figure, ol, ul { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+img, video, svg { display: block; max-width: 100%; }
+
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+
+/* ============================================================================
+   2. PAGE BASE
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;   /* stops iOS inflating text in landscape */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--step-body);
+  line-height: var(--leading-body);
+  /* One element a pixel too wide makes a horizontal scrollbar that feels broken
+     on a phone. This makes that impossible. */
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+}
+
+/* The single left edge everything aligns to. */
+.wrap {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+
+/* ============================================================================
+   3. SHARED PIECES
+   ========================================================================== */
+
+/* The small tracked-out capital label. */
+.eyebrow {
+  font-size: var(--step-eyebrow);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--track-eyebrow);
+  line-height: 1.35;
+}
+
+/* The 3px purple rule that separates the big blocks. Thick enough to read as a
+   deliberate printed rule rather than a hairline border. */
+.bar {
+  height: var(--rule-thick);
+  background: var(--purple);
+  border: 0;
+  margin: 0;
+}
+
+
+/* ============================================================================
+   4. HERO
+   ----------------------------------------------------------------------------
+   Built from Brayden's Figma. Name block on the left, media carousel on the
+   right, with the next panel peeking past the edge of the screen.
+
+   No navigation bar. On a phone it stacks: name, carousel, arrows, button.
+   ========================================================================== */
+
+.hero { padding-top: var(--space-6); }
+
+/* Purple, matching the Figma. Note this one is NOT uppercase and NOT tracked
+   out, unlike every other eyebrow on the site — in the design it's set in bold
+   title case, so it overrides the shared .eyebrow styling. It's the only thing
+   above the name, so it sets the tone before anything else has loaded. */
+.hero__eyebrow {
+  color: var(--purple);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.hero__name {
+  font-family: var(--font-display);
+  font-weight: 400;             /* Archivo Black's real weight value */
+  font-size: var(--step-name);
+  line-height: var(--leading-name);
+  letter-spacing: var(--track-name);
+  margin-top: var(--space-2);
+}
+
+/* Stacks Brayden over Bush as two tight lines, the way the Figma has it. */
+.hero__name span { display: block; }
+
+/* There is no lead line or Follow button in the hero any more — the ask moved
+   into the carousel as its own card. Their rules were deleted rather than left
+   sitting here unused. */
+
+.hero__bar { margin-top: var(--space-7); }
+
+
+/* ---- The carousel ---------------------------------------------------------
+   Built on CSS scroll-snap, which means it SWIPES natively on a phone with no
+   JavaScript at all. The arrows just nudge the same scroll container along, so
+   if the JS ever fails the carousel still works by swiping — it only loses the
+   buttons.
+
+   Slides are sized so one and a bit fit on screen. That sliver of the next
+   panel is what tells people there's more without needing dots or a label.
+   -------------------------------------------------------------------------- */
+
+.carousel { margin-top: var(--space-6); }
+
+.carousel__track {
+  display: flex;
+  /* Wide. In the Figma the space between panels is about 18% of a panel's own
+     width, which is far more air than a normal carousel leaves. That generous
+     gap is a lot of why the design reads as deliberate rather than as a stock
+     slider. */
+  gap: var(--space-6);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* Breaks out of .wrap's gutter so slides run to the screen edge and the next
+     one genuinely bleeds off, rather than stopping short in a margin. */
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  /* scroll-padding is load-bearing, not a nicety. Without it, scroll-snap aligns
+     the first slide to the scrollport's outer edge, which quietly cancels the
+     padding above and jams the photo against the screen edge while every other
+     element sits on the gutter. This keeps snap points on the same left line as
+     the name and the arrows. */
+  scroll-padding-inline: var(--gutter);
+  /* Hides the scrollbar. The arrows and the peeking slide are the affordance;
+     a scrollbar under the photos would look like a mistake. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carousel__track::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel__track { scroll-behavior: auto; }
+}
+
+.slide {
+  flex: 0 0 auto;
+  width: min(74vw, 400px);
+  scroll-snap-align: start;
+  position: relative;
+}
+
+.slide__media {
+  /* 5:7, matching the Figma panels exactly. The photo files are cut to the same
+     ratio, so nothing is cropped or upscaled at render time. */
+  aspect-ratio: 5 / 7;
+  border-radius: var(--radius-media);
+  overflow: hidden;
+  background: var(--panel);
+}
+
+.slide__media img,
+.slide__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* The label sits in a solid block rather than as bare text on the photo. The
+   Figma puts white text straight onto the panel, which works while the panels
+   are empty dark rectangles — but over an actual photograph it lands on
+   whatever happens to be behind it. A solid chip keeps it readable on anything
+   and costs nothing visually. */
+.slide__label {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--ink);
+  color: var(--on-ink);
+  border-radius: var(--radius);
+  font-size: var(--step-eyebrow);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--track-eyebrow);
+}
+
+/* ---- Card slides ----------------------------------------------------------
+   The two slides that aren't photographs: Follow, and the giveaway. Same 5:7
+   panel, same rounded corners — so they sit in the swipe as equals rather than
+   as adverts that wandered in.
+
+   The whole panel is the <a>. Not a small button inside a panel: at this size
+   the tap target is roughly a phone screen, and on a carousel people are
+   already using their thumb, so there is nothing to aim at.
+
+   EVERYTHING INSIDE IS SIZED IN cqw — container query units, measured against
+   the panel's own width. That's not decoration. The panel is narrower on a
+   small laptop than it is on a phone, because there it shares a row with the
+   name. Set in pixels, the text stayed the same size while the panel shrank
+   around it, ate the room the picture needed and left a thin strip of gift
+   card at the top. Tied to the panel, every part shrinks together and the
+   proportions hold at any width.
+
+   Flat colour, no gradient, no image behind the text. Rule 1 in tokens.css.
+   -------------------------------------------------------------------------- */
+
+.card {
+  /* Matches .slide__media exactly — the card IS the panel here, there's no
+     media box inside it. */
+  aspect-ratio: 5 / 7;
+  border-radius: var(--radius-media);
+  /* Makes the panel the thing every cqw below measures against. Without it they
+     would measure .hero__text, which is a different width entirely. */
+  container-type: inline-size;
+  padding: clamp(var(--space-3), 5.5cqw, var(--space-5));
+  display: flex;
+  /* Text hangs off the bottom edge. Anything above it (the gift cards on the
+     giveaway card) gets the room that's left. */
+  flex-direction: column;
+  justify-content: flex-end;
+  /* The artwork runs past the right edge, so the panel has to clip it back to
+     its own rounded corner. */
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform var(--speed) var(--ease);
+}
+
+/* Purple, the same as the Follow button everywhere else on the site. It is the
+   Follow button — just panel-shaped. */
+.card--follow {
+  background: var(--purple);
+  color: var(--on-ink);
+}
+
+/* The pale blue from his jacket, matching the giveaway section further down so
+   the card and the section read as one offer rather than two. */
+.card--give {
+  background: var(--ice);
+  color: var(--ink);
+}
+
+/* YouTube red. Brayden asked for it, and it's the one card that gets a colour
+   from outside the Figma palette — see --red in tokens.css for the shade and
+   why it isn't #FF0000.
+
+   Purple still belongs to the Follow button alone. Red doesn't compete with it
+   the way a second purple card would: it reads as "that other place", which is
+   exactly what it is. */
+.card--tube {
+  background: var(--red);
+  color: var(--on-ink);
+}
+
+/* Full cream, not the soft version used on the purple card. At 66% opacity over
+   this red the handle drops to about 2.5:1 and stops being readable. */
+.card--tube .card__handle { color: var(--on-ink); }
+
+/* ---- The prize photo on the giveaway card ----
+   Big, tilted a few degrees, and running off the right edge of the panel. The
+   tilt is the whole trick: the cards are a cut-out on a flat colour field, and
+   set straight they read as clip art dropped in a box. Off-axis and cropped by
+   the edge, they read as an object lying on the panel.
+
+   It sits in the flow rather than being positioned, so the headline underneath
+   can never collide with it — the picture takes the room that's left and no
+   more. */
+.card__art {
+  display: block;
+  /* Wider than the panel and pushed right, so the far card is cut by the right
+     edge of the panel and the stack is cropped by the top. Cropped by the frame
+     is what makes it read as an object lying there rather than a picture of
+     some gift cards, which is the whole difference between this and clip art. */
+  width: 122%;
+  margin-bottom: clamp(var(--space-3), 6cqw, var(--space-6));
+  /* The exact offset is doing one specific job: it pushes the small
+     "amazon.com" wordmarks off the right edge entirely. Half a cut-off word in
+     the corner looks like a mistake; a card sliced clean through doesn't. */
+  transform: rotate(-7deg) translate(18%, -18%);
+  /* The image has its own soft edges and a transparent background, so it needs
+     nothing behind it. */
+}
+
+.card__art img {
+  width: 100%;
+  height: auto;
+}
+
+.card__body { display: block; }
+
+.card__head {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 400;                 /* Archivo Black's real weight value */
+  /* Sized against the slide, not the window, so it stays in proportion at every
+     width instead of needing a breakpoint of its own. */
+  font-size: clamp(1.125rem, 13cqw, 3rem);
+  line-height: 0.98;
+  letter-spacing: var(--track-name);
+}
+
+.card__handle,
+.card__note {
+  display: block;
+  margin-top: clamp(var(--space-2), 3cqw, var(--space-3));
+  font-size: clamp(0.75rem, 4.4cqw, var(--step-small));
+}
+
+.card--follow .card__handle { color: var(--on-ink-soft); }
+.card--give   .card__note   { color: var(--ink-soft); }
+
+/* The "Open TikTok →" line. Underlined because on a coloured panel with no
+   border there is otherwise nothing saying this is a link. */
+.card__go {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 2cqw, var(--space-2));
+  margin-top: clamp(var(--space-3), 5cqw, var(--space-5));
+  font-size: clamp(0.6875rem, 4cqw, var(--step-small));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-btn);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* em, so the arrow shrinks with the words next to it rather than staying 18px
+   while they get smaller. */
+.card__go svg {
+  width: 1.3em;
+  height: 1.3em;
+  transition: transform var(--speed) var(--ease);
+}
+
+/* A small nudge, nothing more. The photos don't move on hover and these
+   shouldn't either — it only needs to say "this one is pressable". */
+.card:hover .card__go svg,
+.card:focus-visible .card__go svg { transform: translateX(3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .card__go svg { transition: none; }
+}
+
+
+/* ---- Arrows ---------------------------------------------------------------
+   Restyled from the Figma's black circles, which is the one change Brayden
+   asked for. Square, outlined, with the position counter between them.
+
+   Square against the rounded panels is deliberate. The counter is an addition:
+   his version gives no indication of how many items there are or where you are
+   in them, and the disabled state at each end tells you when to stop pressing.
+   -------------------------------------------------------------------------- */
+
+.carousel__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.carousel__btn {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  color: var(--ink);
+  background: transparent;
+  transition: background-color var(--speed) var(--ease),
+              border-color var(--speed) var(--ease),
+              color var(--speed) var(--ease),
+              opacity var(--speed) var(--ease);
+}
+
+.carousel__btn:hover:not(:disabled),
+.carousel__btn:focus-visible:not(:disabled) {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--ground);
+}
+
+.carousel__btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.carousel__count {
+  font-size: var(--step-small);
+  color: var(--ink-soft);
+  /* Tabular figures, so the number doesn't jump sideways as it counts up. */
+  font-variant-numeric: tabular-nums;
+}
+
+
+@media (min-width: 720px) {
+  .hero__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: var(--space-8);
+    /* start, not center. In the Figma the panels and the name both hang from the
+       same top line, with the panels running much further down the page. Centring
+       them against each other loses that, and it's a lot of the composition. */
+    align-items: start;
+    padding-top: var(--space-7);
+  }
+
+  .hero__text {
+    grid-column: 1;
+    /* Makes this column a container that cqw units below can measure against. */
+    container-type: inline-size;
+  }
+
+  /* Sized against the COLUMN, not the window.
+     "Brayden" is one unbreakable word about 4.35x the font size wide, so it
+     needs to be under 1/4.35 = 23% of the column. 21cqw leaves a little air.
+
+     This is why it's cqw and not vw: past about 1070px the page hits its
+     max-width and the column STOPS growing, while a vw-based size keeps going.
+     That gap is exactly what pushed the name under the photo — it looked fine
+     at 1280 and broke on a wider monitor. Tied to the container, it cannot
+     happen at any width. */
+  .hero__name { font-size: min(21cqw, 8.5rem); }
+
+  .carousel    { grid-column: 2; margin-top: 0; }
+
+  .carousel__track { gap: var(--space-7); }
+
+  /* On a wide screen the track only needs to break out on its right side, so
+     the next panel runs off the edge of the window the way the Figma shows it
+     while the left edge still lines up with the name. */
+  .carousel__track {
+    margin-left: 0;
+    padding-left: 0;
+    scroll-padding-left: 0;
+    margin-right: calc(var(--gutter) * -1);
+  }
+
+  /* Taller. The Figma's panels are about 80% of the canvas height — they are the
+     other half of the composition, not a thumbnail beside the name. */
+  .slide { width: min(76%, 430px); }
+
+  .hero__bar { margin-top: var(--space-8); }
+}
+
+
+/* ============================================================================
+   5. FOLLOW BUTTON
+   ----------------------------------------------------------------------------
+   A solid purple rectangle sized to its own label — NOT full width. A
+   full-width rounded pill is one of the loudest generated-page tells, and a
+   button that stops where its text stops looks like something a person placed.
+
+   Purple appears on this page only here, the eyebrow and the 3px rules. That
+   what makes the eye land on it instantly, and getting it pressed is the entire
+   purpose of the site.
+   ========================================================================== */
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  /* 52px tall, comfortably past the ~48px minimum for a reliable thumb tap. */
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  background: var(--purple);
+  /* Cream on purple. Ink on purple would be dark-on-dark and unreadable. */
+  color: var(--ground);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--track-btn);
+  text-decoration: none;
+  transition: background-color var(--speed) var(--ease),
+              transform var(--speed) var(--ease);
+}
+
+.cta:hover { background: #4A2A94; }   /* --purple, lifted slightly */
+
+/* Presses down when tapped so it feels physical. */
+.cta:active { transform: translateY(2px); }
+
+/* On the dark slab the purple would disappear into the ink, so the closing
+   button inverts to the pale ground colour instead. */
+.cta--pale {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.cta--pale:hover { background: #FFF7E6; }
+
+
+/* ============================================================================
+   6. POINTS — what he'd change
+   ----------------------------------------------------------------------------
+   A full-bleed slab of ink. Two numbered lines, nothing else. The numbers are
+   large and purple and do the work that an icon would do on a template, without
+   being an icon.
+
+   TWO, not three, and everything here is sized for two. The type and the
+   numerals are a step larger than they were with three, and on a wide screen
+   they take half the width each. That's the whole trick to making two points
+   look deliberate: give them the room the third one would have had, instead of
+   leaving a hole where it used to be.
+   ========================================================================== */
+
+.points {
+  background: var(--ink);
+  color: var(--on-ink);
+  padding-block: var(--space-8);
+}
+
+.points__eyebrow { color: var(--purple-lift); }
+
+.points__list {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.point {
+  display: grid;
+  /* The number sits in its own column so both bodies align to one edge. */
+  grid-template-columns: auto 1fr;
+  gap: var(--space-4);
+  align-items: start;
+  padding-top: var(--space-4);
+  border-top: 1px solid rgba(239, 228, 206, 0.22);
+}
+
+.point__num {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-num);
+  line-height: 0.8;
+  color: var(--purple-lift);
+  /* Optical nudge: big display numerals carry space above the digits, which
+     leaves them looking like they float too low against the heading. */
+  margin-top: -0.06em;
+}
+
+.point__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Body size, not the small size it was at three across. Two columns are wide
+   enough to carry it, and 14px text in a half-width column looks like a caption
+   under a heading rather than the promise itself. */
+.point__text {
+  color: var(--on-ink-soft);
+  font-size: var(--step-body);
+  margin-top: var(--space-3);
+  max-width: 38ch;
+}
+
+@media (min-width: 720px) {
+  /* Two across, with a wide gutter between them. The gap is deliberately larger
+     than it was with three: fewer columns need more air between them or they
+     read as one block of text in two halves. */
+  .points__list { grid-template-columns: repeat(2, 1fr); gap: var(--space-8); }
+
+  .point {
+    gap: var(--space-5);
+    padding-top: var(--space-5);
+  }
+
+  /* Bigger than --step-num gives on its own. These two numerals are most of
+     what fills the slab now, and at the old size they left the section looking
+     like it was waiting for a third. */
+  .point__num { font-size: min(9vw, 6rem); }
+
+  .point__title { font-size: 1.5rem; }
+}
+
+
+/* ============================================================================
+   6b. GIVEAWAY
+   ----------------------------------------------------------------------------
+   Pale blue, the colour of his jacket. It's the only section on a blue field, so
+   it reads as a different kind of thing on the page without borrowing orange —
+   orange stays reserved for Follow, and the giveaway must not compete with it.
+   ========================================================================== */
+
+.giveaway {
+  background: var(--ice);
+  color: var(--ink);
+  padding-block: var(--space-8);
+}
+
+.giveaway .eyebrow { color: var(--ink); opacity: 0.6; }
+
+.giveaway__head {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-h2);
+  line-height: 1.05;
+  letter-spacing: var(--track-name);
+  text-transform: uppercase;
+  margin-top: var(--space-3);
+  max-width: 18ch;
+}
+
+/* The numbered steps that used to sit between the headline and the button are
+   gone — they live in the rules box now. Their rules were deleted rather than
+   left here unused. The gate__steps set at the end of this file is the same
+   idea, styled for the box. */
+
+.giveaway__cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  margin-top: var(--space-5);
+  padding: 0 var(--space-5);
+  /* Ink, not orange. Strong enough to be obviously pressable, but it cannot be
+     mistaken for the Follow button, which is the only orange thing on the site. */
+  background: var(--ink);
+  color: var(--ground);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--track-btn);
+  text-decoration: none;
+  transition: background-color var(--speed) var(--ease),
+              transform var(--speed) var(--ease);
+}
+
+.giveaway__cta:hover { background: #2A2E36; }
+.giveaway__cta:active { transform: translateY(2px); }
+
+.giveaway__note {
+  margin-top: var(--space-4);
+  font-size: var(--step-small);
+  color: var(--ink);
+  opacity: 0.62;
+}
+
+
+/* ============================================================================
+   9. CLOSING BAND + FOOTER
+   ----------------------------------------------------------------------------
+   The second ask. By this point someone has read the three points and seen both
+   photos, so this is where most conversions actually happen — the hero only
+   catches the already-convinced.
+   ========================================================================== */
+
+.closing {
+  background: var(--ink);
+  color: var(--on-ink);
+  padding-block: var(--space-8);
+}
+
+.closing__head {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-h2);
+  line-height: 1.05;
+  letter-spacing: var(--track-name);
+  text-transform: uppercase;
+  margin-top: var(--space-3);
+}
+
+.closing__eyebrow { color: var(--purple-lift); }
+
+.closing__text {
+  color: var(--on-ink-soft);
+  max-width: 38ch;
+  margin-top: var(--space-3);
+}
+
+.closing__cta { margin-top: var(--space-6); }
+
+.closing__handle {
+  margin-top: var(--space-4);
+  font-size: var(--step-small);
+  color: var(--ice);
+}
+
+/* Extra platform buttons, built by js/app.js only if a handle is filled in.
+   :empty means that while they're all blank this takes up no space at all. */
+[data-extra] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+[data-extra]:empty { display: none; }
+
+[data-extra] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--on-ink-soft);
+  color: var(--on-ink);
+  font-size: var(--step-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--track-btn);
+  text-decoration: none;
+}
+
+[data-extra] a:hover { border-color: var(--purple-lift); color: var(--purple-lift); }
+
+/* Share. A plain underlined text link, not a second button — sharing matters
+   but it must never pull attention off the Follow button next to it. */
+.sharelink {
+  display: inline-block;
+  margin-top: var(--space-4);
+  padding: var(--space-3) 0;
+  color: var(--on-ink-soft);
+  font-size: var(--step-small);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sharelink:hover { color: var(--on-ink); }
+
+/* Confirmation when the link is copied, on desktop browsers that have no
+   native share sheet. */
+.toast {
+  position: fixed;
+  left: var(--gutter);
+  bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+  z-index: 60;
+  padding: var(--space-3) var(--space-4);
+  background: var(--ink);
+  color: var(--ground);
+  font-size: var(--step-small);
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity var(--speed) var(--ease),
+              transform var(--speed) var(--ease);
+}
+
+.toast.is-visible { opacity: 1; transform: translateY(0); }
+
+.footer {
+  padding-block: var(--space-5);
+  /* Room for the sticky bar so the last line is never hidden behind it. */
+  padding-bottom: calc(var(--space-9) + env(safe-area-inset-bottom, 0px));
+  color: var(--ink-soft);
+  font-size: var(--step-small);
+}
+
+.footer p + p { margin-top: var(--space-1); }
+
+
+/* ============================================================================
+   10. STICKY BAR
+   ----------------------------------------------------------------------------
+   A thin ink bar that slides up once no Follow button is on screen, so one is
+   never more than a thumb-tap away. It hides again the moment a real one comes
+   into view — two of the same button stacked reads as nagging.
+
+   This is the only JavaScript on the site. See js/app.js.
+   ========================================================================== */
+
+.stickybar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 48px;
+  padding: 0 var(--gutter);
+  /* env(safe-area-inset-bottom) is the home-indicator strip on iPhones without a
+     home button. Without it the bar sits under it and is hard to press. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--ink);
+  color: var(--ice);
+  text-decoration: none;
+  font-size: var(--step-small);
+  font-weight: 600;
+  letter-spacing: var(--track-btn);
+
+  transform: translateY(110%);
+
+  /* visibility:hidden keeps the off-screen link out of the keyboard tab order.
+     The delayed transition is the subtle part: visibility can't animate, so
+     flipping it the instant the bar starts hiding would make it vanish
+     mid-slide. Delaying by exactly the slide duration lets it finish. Going the
+     other way there's no delay, so it's focusable as soon as it moves. */
+  visibility: hidden;
+  transition: transform var(--speed) var(--ease),
+              visibility 0s linear var(--speed);
+}
+
+.stickybar.is-visible {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform var(--speed) var(--ease),
+              visibility 0s linear 0s;
+}
+
+/* The small orange square on the right. Echoes the button without repeating it. */
+.stickybar__mark {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  background: var(--purple-lift);
+}
+
+
+/* ============================================================================
+   11. THE RULES BOX
+   ----------------------------------------------------------------------------
+   The <dialog> that opens before the giveaway form.
+
+   It is meant to read as a thing that landed on top of the page, not as another
+   section of it. Four things do that, and they're the only four: it sits on a
+   dimmed page, it casts a shadow, it has a ✕ in its corner, and it scales up as
+   it arrives. Everything else stays the site's own — cream, square edges, the
+   3px purple rule along the top.
+
+   Sized to its content, not to the screen. A full-screen takeover for eight
+   lines of text is the single most template-looking thing a page can do.
+   ========================================================================== */
+
+.gate {
+  width: min(30rem, calc(100vw - var(--gutter) * 2));
+  padding: 0;
+  border: 0;
+  /* The 3px purple rule, same as .bar between the sections. */
+  border-top: var(--rule-thick) solid var(--purple);
+  border-radius: var(--radius);
+  background: var(--ground);
+  color: var(--ink);
+  /* Deep and soft rather than a tight grey halo. This is the one shadow in the
+     project: it says "floating above the page", which is the one thing the flat
+     design has no other way of saying. */
+  box-shadow: 0 24px 60px rgba(22, 24, 28, 0.34);
+}
+
+/* The dark area behind it. Ink rather than plain black, so it reads as the same
+   palette rather than as a browser default. */
+.gate::backdrop { background: rgba(22, 24, 28, 0.68); }
+
+/* Arrives, rather than appearing. Short and small on purpose — anything longer
+   than about 200ms feels like waiting for a page instead of opening a box. */
+@keyframes gate-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes gate-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.gate[open] { animation: gate-in 180ms var(--ease); }
+.gate[open]::backdrop { animation: gate-fade 180ms var(--ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gate[open],
+  .gate[open]::backdrop { animation: none; }
+}
+
+.gate__inner {
+  /* What the ✕ is positioned against. */
+  position: relative;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+}
+
+/* The ✕ in the corner. Ink on cream, no circle around it — a grey disc with an
+   x in it is the most generic control on the internet. */
+.gate__x {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--ink-soft);
+  transition: color var(--speed) var(--ease);
+}
+
+.gate__x:hover { color: var(--ink); }
+
+.gate__eyebrow { color: var(--purple); }
+
+.gate__head {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--step-h2);
+  line-height: 1.05;
+  letter-spacing: var(--track-name);
+  text-transform: uppercase;
+  margin-top: var(--space-3);
+  max-width: 16ch;
+}
+
+.gate__lead {
+  margin-top: var(--space-5);
+  font-weight: 600;
+}
+
+.gate__steps {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.gate__steps li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+/* A plain digit in the display face, not a circled icon — numbers in coloured
+   discs are a template signature. */
+.gate__num {
+  flex: none;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1;
+  opacity: 0.42;
+}
+
+/* Step 1 is a link and a lock at the same time, so it's set bolder than the
+   line under it — it has to look like the thing to press. */
+.gate__steps a {
+  color: var(--ink);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+
+/* Appears next to step 1 once they're past it: "Done" if they pressed Follow,
+   "No TikTok" if they took the way out. Purely a receipt — it confirms the
+   press registered, so nobody prods the dead form button wondering why nothing
+   is happening. Empty until then, and empty means gone. */
+.gate__mark {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background: var(--purple);
+  color: var(--ground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--track-eyebrow);
+}
+
+.gate__mark:empty { display: none; }
+
+/* The no-TikTok version. Grey, not purple: they got past the step, but they
+   didn't do the thing, and the two shouldn't look identical. */
+.gate__mark--muted {
+  background: var(--rule);
+  color: var(--ink-soft);
+}
+
+.gate__steps li.is-done .gate__num { opacity: 1; color: var(--purple); }
+
+/* The "Don't have TikTok?" way out. Small, grey and underlined — a real button
+   sitting next to the Follow link would compete with it, and this needs to be
+   findable rather than tempting. */
+.gate__nope {
+  display: inline-block;
+  margin-top: var(--space-3);
+  padding: var(--space-2) 0;
+  color: var(--ink-soft);
+  font-size: var(--step-small);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.gate__nope:hover { color: var(--ink); }
+
+/* Needed, not belt and braces. The browser's own rule for the hidden attribute
+   is display:none, and the class rule above outranks it — so without this the
+   script hides the button and it stays on screen anyway. */
+.gate__nope[hidden] { display: none; }
+
+/* The whole row is the tap target, which is why it's padded and has a rule
+   round it — a bare 12px checkbox is unhittable with a thumb. */
+.gate__check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  margin-top: var(--space-5);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
+  border: 2px solid var(--rule);
+  cursor: pointer;
+  font-weight: 600;
+  transition: border-color var(--speed) var(--ease);
+}
+
+.gate__check:hover,
+.gate__check:focus-within { border-color: var(--purple); }
+
+.gate__check input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  /* Paints the browser's own tick in the site's purple instead of system
+     blue, which is otherwise the one colour on the page nobody chose. */
+  accent-color: var(--purple);
+}
+
+.gate__go { margin-top: var(--space-5); }
+
+/* Not available yet. Still focusable and still announced — see the note in
+   js/app.js about why this isn't a disabled control. */
+.gate__go.is-off {
+  background: var(--rule);
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.gate__go.is-off:hover { background: var(--rule); }
+.gate__go.is-off:active { transform: none; }
+
+.gate__hint:not(:empty) {
+  margin-top: var(--space-3);
+  color: var(--purple);
+  font-size: var(--step-small);
+  font-weight: 600;
+}
+
+.gate__note {
+  margin-top: var(--space-4);
+  font-size: var(--step-small);
+  color: var(--ink-soft);
+}
+
+/* ---- Terms ----------------------------------------------------------------
+   A <details>, which is a disclosure button the browser already knows how to
+   build: it opens, it closes, it works from a keyboard, and a screen reader
+   announces whether it's open. Written by hand that is three attributes and a
+   listener, and it's usually one of them short.
+
+   Closed by default and quiet at the bottom. Terms have to be there and nobody
+   wants them in the way.
+   -------------------------------------------------------------------------- */
+
+.gate__terms {
+  margin-top: var(--space-5);
+  border-top: 1px solid var(--rule);
+}
+
+.gate__terms summary {
+  /* Removes the browser's default triangle so the ▸ below is the only marker. */
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) 0 var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--step-small);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--track-btn);
+  cursor: pointer;
+}
+
+/* Safari puts its triangle here instead. */
+.gate__terms summary::-webkit-details-marker { display: none; }
+
+.gate__terms summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  /* A small solid triangle drawn out of borders, so there's no icon file and
+     nothing to load. */
+  border-left: 6px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform var(--speed) var(--ease);
+}
+
+.gate__terms[open] summary::before { transform: rotate(90deg); }
+
+.gate__terms summary:hover { color: var(--ink); }
+
+.gate__terms-body {
+  /* Small, because it's the fine print and pretending otherwise fools nobody.
+     Still 13px, which stays readable on a phone. */
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  padding-bottom: var(--space-3);
+  /* No scrollbar of its own. On a phone the open terms make the box taller than
+     the screen and the box itself scrolls, which is right — two nested
+     scrollbars in one small popup is a mess to use with a thumb. */
+}
+
+.gate__terms-body p + p { margin-top: var(--space-3); }
+
+
+/* ============================================================================
+   UTILITY
+   ========================================================================== */
+
+/* Read by screen readers, invisible on screen. Gives the page a proper heading
+   outline without putting headings into the design. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
